@@ -3,7 +3,46 @@
   <head>
     <title>Lunch Checker</title>
     <script src="https://code.angularjs.org/1.8.2/angular.min.js"></script>
-    <script src="app.js"></script>
+    
+    <script>
+      (function() {
+    angular.module('LunchChecker',[])
+    .controller('LunchCheckerController',LunchBoxController)})();
+
+LunchBoxController.$inject = ['$scope'];
+
+function LunchBoxController($scope) {
+    $scope.message = '';
+    $scope.checkText = '';
+    $scope.style = ''
+    
+
+    $scope.checkForValue = function() {
+        if($scope.checkText.length === 0) {
+            $scope.message = 'Please enter data first';
+            $scope.style = {
+              'color': 'red',
+              'border' : '1px solid red'
+            }
+            return;
+        }
+
+        const items = $scope.checkText.split(',');
+
+        if(items.length <= 3) {
+            $scope.message = 'Enjoy';
+        }
+        else {
+            $scope.message = 'Too Much';
+        }
+        $scope.style = $scope.style = {
+          'color': 'green',
+          'border' : '1px solid green'
+        }
+    }
+}
+    </script>
+    
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <link rel="stylesheet" href="styles/bootstrap.min.css">
     <style>
@@ -24,7 +63,7 @@
          </div>
          <div class="form-group message">
            <!-- Your message can go here. -->
-           <input type="text" ng-model="message" />
+           <input type="text" ng-model="message" ng-style="style" />
          </div>
    </div>
 
