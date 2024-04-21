@@ -1,5 +1,5 @@
 <table class="table table-responsive">
-  <tr ng-if="foundLength === 0"><td>Nothing found</td></tr>
+  <tr ng-if="foundLength === 0"><td class="alert alert-danger text-center">Nothing found</td></tr>
   <tr ng-repeat="item in found">
     <td>{{:: item.short_name }}</td>
     <td>{{:: item.name }}</td>
