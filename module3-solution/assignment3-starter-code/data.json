@@ -1,0 +1,26 @@
+{
+    "menu_items": [
+      {
+        "name": "Item a",
+        "description": "Description of Item a",
+        "price": 10,
+        "short_name": "I1"
+      },
+      {
+        "name": "Item b",
+        "description": "Description of Item b",
+        "price": 15,
+        "short_name": "I2"
+      },
+      {
+        "name": "Item c",
+        "description": "Description of Item c",
+        "price": 20,
+        "short_name": "I3"
+      },
+      {
+        "name":"Item d",
+        "description": "Description of Item d"
+      }
+    ]
+  }
