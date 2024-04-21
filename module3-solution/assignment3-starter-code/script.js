@@ -1,76 +1,68 @@
-(function () {
+(function() {
   'use strict';
-
   angular.module('NarrowItDownApp', [])
-      .controller('NarrowItDownController', NarrowItDownController)
-      .service('MenuSearchService', MenuSearchService)
-      .constant('ApiBasePath', "./data.json")
-      .directive('foundItems', FoundItemsDirective);
+  
+  .controller('NarrowItDownController', NarrowItDownController)
+  .service('MenuSearchService', MenuSearchService)
+  .directive('foundItems', FoundItemsDirective)
+  .constant('BaseUrl', 'https://coursera-jhu-default-rtdb.firebaseio.com');
 
+  function FoundItemsDirective() {
+      var ddo = {
+          templateUrl: 'found.html',
+          scope: {
+              found: '<',
+              foundLength: '<',
+              onRemove: '&'
+          }
+      };
+  
+      return ddo;
+  }
 
-function FoundItemsDirective() {
-  var ddo = {
-      templateUrl: 'foundItems.html',
-      restrict: 'E',
-      scope: {
-          items: '<',
-          onRemove: '&',
-          isValid: '<'
-      }
-  }; 
-  return ddo;
-}
+  MenuSearchService.$inject = ['$http', 'BaseUrl'];
+  function MenuSearchService($http, BaseUrl) {
+      var service = this;
 
+      service.getMatchedMenuItems = function(searchTerm) {
+          return $http({
+              method: "GET",
+              url: (BaseUrl + "/menu_items.json")
+          }).then(function(result) {
+              var payload = result.data;
+              var foundItems = [];
+              if(searchTerm.trim().length > 0) {
+                  var menu;
+                  for(menu of Object.values(payload)) {
+                      foundItems = foundItems.concat((menu.menu_items || []).filter(function(menuItem) { 
+                          return menuItem && menuItem.description && menuItem.description.indexOf(searchTerm) >= 0;
+                      }));
+                  }
+              }
+              return foundItems;
+          }).catch(function (error) {
+              console.log(error);
+          });
+      };
+  };
 
-NarrowItDownController.$inject = ['MenuSearchService'];
-function NarrowItDownController (MenuSearchService) {
-  var menuSearch = this;
+  NarrowItDownController.$inject = ['MenuSearchService'];
+  function NarrowItDownController(MenuSearchService) {
+      var narrowItDown = this;
 
-  menuSearch.valid = true;
-  menuSearch.searchTerm = "";
-  menuSearch.found = [];
+      narrowItDown.found = [];
+      narrowItDown.searchTerm = '';
+      narrowItDown.foundLength = -1;
 
-  menuSearch.search = async function() {
-      if (searchIsEmpty(menuSearch.searchTerm)) {
-          menuSearch.found = [];
-          menuSearch.valid = false;
-          return;
+      narrowItDown.getMatchedMenuItems = function() {
+          MenuSearchService.getMatchedMenuItems(narrowItDown.searchTerm).then(function(foundItems) {
+              narrowItDown.found = foundItems;
+              narrowItDown.foundLength = narrowItDown.found.length;
+          });
       };
 
-      try {
-          menuSearch.found = await MenuSearchService.getMatchedMenuItems(menuSearch.searchTerm);
-          menuSearch.valid = (menuSearch.found.length > 0);
-      } catch (error) {
-          console.error("Error fetching menu items:", error);
-      }
+      narrowItDown.removeMenuItem = function(index) {
+          narrowItDown.found.splice(index, 1);
+      };
   };
-
-  menuSearch.removeItem = function (index) {
-      menuSearch.found.splice(index, 1);
-  };
-
-
-  function searchIsEmpty (searchString) {
-      return searchString.replace(/\s/g,"").length === 0;
-  };
-}
-
-MenuSearchService.$inject = ['$http', 'ApiBasePath']
-function MenuSearchService ($http, ApiBasePath) {
-  var service = this;
-
-  service.getMatchedMenuItems = async function (searchTerm) {
-    try {
-      const response = await $http.get(ApiBasePath);
-      const data = response.data;
-      const allMenuItems = data.menu_items;
-
-      return allMenuItems.filter(item => item.name.toLowerCase().includes(searchTerm.toLowerCase()));
-    } catch (error) {
-      console.error("Error fetching menu items:", error);
-      throw error; // Rethrow the error to be caught by the caller
-    }
-  };
-}
-
 })();
